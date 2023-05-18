@@ -47,7 +47,7 @@
 *           Default value: 128 bytes
 *
 *       #define RINI_MAX_VALUE_CAPACITY
-*           Defines the maximum capacity of config values, customizable by user.
+*           Defines the maximum number of values supported
 *           Default value: 32 entries support
 * 
 *       #define RINI_VALUE_DELIMITER
