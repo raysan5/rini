@@ -69,10 +69,8 @@ void rini_unload_config(rini_config *config);
 // NOTE: Only full config file rewrite supported, no partial updates
 void rini_save_config(rini_config config, const char *file_name, const char *header);
 
-// Get config value int for provided key, returns -1 if not found
+// Get config value int/text/description for provided key, returns -1 or NULL if not found
 int rini_get_config_value(rini_config config, const char *key);
-
-// Get config value text/description for provided key
 const char *rini_get_config_value_text(rini_config config, const char *key); 
 const char *rini_get_config_value_description(rini_config config, const char *key);
 
