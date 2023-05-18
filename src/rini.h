@@ -30,8 +30,24 @@
 *           If not defined, the library is in header only mode and can be included in other headers
 *           or source files without problems. But only ONE file should hold the implementation.
 * 
-*       #define RINI_MAX_CONFIG_CAPACITY
-*           Define the maximum capacity of config data structure, customizable by user.
+*       #define RINI_MAX_LINE_SIZE
+*           Defines the maximum size of line buffer to read from file.
+*           Default value: 512 bytes (considering [key + text + desc] is 256 max size by default)
+*
+*       #define RINI_MAX_KEY_SIZE
+*           Defines the maximum size of value key
+*           Default value: 64 bytes
+* 
+*       #define RINI_MAX_TEXT_SIZE
+*           Defines the maximum size of value text
+*           Default value: 64 bytes
+* 
+*       #define RINI_MAX_DESC_SIZE
+*           Defines the maximum size of value description
+*           Default value: 128 bytes
+*
+*       #define RINI_MAX_VALUE_CAPACITY
+*           Defines the maximum capacity of config values, customizable by user.
 *           Default value: 32 entries support
 * 
 *       #define RINI_VALUE_DELIMITER
@@ -126,8 +142,24 @@
   #define RINI_LOG(...)
 #endif
 
-#if !defined(RINI_MAX_CONFIG_CAPACITY)
-    #define RINI_MAX_CONFIG_CAPACITY         32
+#if !defined(RINI_MAX_LINE_SIZE)
+    #define RINI_MAX_LINE_SIZE              512
+#endif
+
+#if !defined(RINI_MAX_KEY_SIZE)
+    #define RINI_MAX_KEY_SIZE                64
+#endif
+
+#if !defined(RINI_MAX_TEXT_SIZE)
+    #define RINI_MAX_TEXT_SIZE               64
+#endif
+
+#if !defined(RINI_MAX_DESC_SIZE)
+    #define RINI_MAX_DESC_SIZE              128
+#endif
+
+#if !defined(RINI_MAX_VALUE_CAPACITY)
+    #define RINI_MAX_VALUE_CAPACITY          32
 #endif
 
 #if !defined(RINI_VALUE_DELIMITER)
@@ -148,16 +180,16 @@
 //----------------------------------------------------------------------------------
 // Config value entry
 typedef struct {
-    char key[64];               // Config value key identifier
-    char text[64];              // Config value text
-    char desc[128];             // Config value description
+    char key[RINI_MAX_KEY_SIZE];    // Config value key identifier
+    char text[RINI_MAX_TEXT_SIZE];  // Config value text
+    char desc[RINI_MAX_DESC_SIZE];  // Config value description
 } rini_config_value;
 
 // Config data
 typedef struct {
-    rini_config_value *values;  // Config values array
-    unsigned int count;         // Config values count
-    unsigned int capacity;      // Config values capacity
+    rini_config_value *values;      // Config values array
+    unsigned int count;             // Config values count
+    unsigned int capacity;          // Config values capacity
 } rini_config;
 
 #if defined(__cplusplus)
@@ -202,8 +234,6 @@ RINIAPI int rini_set_config_value_description(rini_config *config, const char *k
 #include <stdlib.h>         // Required for: malloc(), calloc(), free()
 #include <string.h>         // Required for: memset(), memcpy(), strcmp(), strlen()
 
-#define RINI_MAX_LINE_SIZE      2048
-
 //----------------------------------------------------------------------------------
 // Defines and macros
 //----------------------------------------------------------------------------------
@@ -232,8 +262,8 @@ static rini_config rini_load_config(const char *file_name)
     unsigned int value_counter = 0;
 
     // Init config data to max capacity
-    config.capacity = RINI_MAX_CONFIG_CAPACITY; 
-    config.values = (rini_config_value *)RINI_CALLOC(RINI_MAX_CONFIG_CAPACITY, sizeof(rini_config_value));
+    config.capacity = RINI_MAX_VALUE_CAPACITY; 
+    config.values = (rini_config_value *)RINI_CALLOC(RINI_MAX_VALUE_CAPACITY, sizeof(rini_config_value));
 
     if (file_name != NULL)
     {
@@ -242,7 +272,7 @@ static rini_config rini_load_config(const char *file_name)
         if (rini_file != NULL)
         {
             char buffer[RINI_MAX_LINE_SIZE] = { 0 };    // Buffer to read every text line
-            char key[64] = { 0 };
+            char key[RINI_MAX_KEY_SIZE] = { 0 };
 
             // First pass to count valid config lines
             while (!feof(rini_file))
@@ -259,7 +289,7 @@ static rini_config rini_load_config(const char *file_name)
             }
 
             // WARNING: We can't store more values than its max capacity
-            config.count = (value_counter > RINI_MAX_CONFIG_CAPACITY)? RINI_MAX_CONFIG_CAPACITY : value_counter;
+            config.count = (value_counter > RINI_MAX_VALUE_CAPACITY)? RINI_MAX_VALUE_CAPACITY : value_counter;
 
             if (config.count > 0)
             {
@@ -277,7 +307,7 @@ static rini_config rini_load_config(const char *file_name)
                     if ((buffer[0] != '#') && (buffer[0] != ';') && (buffer[0] != '\n') && (buffer[0] != '\0'))
                     {
                         // Get keyentifier string
-                        memset(config.values[value_counter].key, 0, 64);
+                        memset(config.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
                         rini_read_config_key(buffer, config.values[value_counter].key);
                         rini_read_config_value_text(buffer, config.values[value_counter].text, config.values[value_counter].desc);
 
@@ -378,7 +408,7 @@ const char *rini_get_config_value_description(rini_config config, const char *ke
 int rini_set_config_value(rini_config *config, const char *key, int value, const char *desc)
 {
     int result = -1;
-    char value_text[128] = { 0 };
+    char value_text[RINI_MAX_TEXT_SIZE] = { 0 };
 
     sprintf(value_text, "%i", value);
 
@@ -400,10 +430,10 @@ int rini_set_config_value_text(rini_config *config, const char *key, const char 
     {
         if (strcmp(key, config->values[i].key) == 0)
         {
-            memset(config->values[i].text, 0, 64);
+            memset(config->values[i].text, 0, RINI_MAX_TEXT_SIZE);
             memcpy(config->values[i].text, text, strlen(text));
 
-            memset(config->values[i].desc, 0, 128);
+            memset(config->values[i].desc, 0, RINI_MAX_DESC_SIZE);
             if (desc != NULL) memcpy(config->values[i].desc, desc, strlen(desc));
             result = 0;
             break;
@@ -417,9 +447,9 @@ int rini_set_config_value_text(rini_config *config, const char *key, const char 
         {
             // NOTE: We do a manual copy to avoid possible overflows on input data
 
-            for (int i = 0; (i < 64) && (key[i] != '\0'); i++) config->values[config->count].key[i] = key[i];
-            for (int i = 0; (i < 64) && (text[i] != '\0'); i++) config->values[config->count].text[i] = text[i];
-            for (int i = 0; (i < 128) && (desc[i] != '\0'); i++) config->values[config->count].desc[i] = desc[i];
+            for (int i = 0; (i < RINI_MAX_KEY_SIZE) && (key[i] != '\0'); i++) config->values[config->count].key[i] = key[i];
+            for (int i = 0; (i < RINI_MAX_TEXT_SIZE) && (text[i] != '\0'); i++) config->values[config->count].text[i] = text[i];
+            for (int i = 0; (i < RINI_MAX_DESC_SIZE) && (desc[i] != '\0'); i++) config->values[config->count].desc[i] = desc[i];
 
             config->count++;
             result = 0;
@@ -439,7 +469,7 @@ int rini_set_config_value_description(rini_config *config, const char *key, cons
     {
         if (strcmp(key, config->values[i].key) == 0)
         {
-            memset(config->values[i].desc, 0, 128);
+            memset(config->values[i].desc, 0, RINI_MAX_DESC_SIZE);
             if (desc != NULL) memcpy(config->values[i].desc, desc, strlen(desc));
             result = 0;
             break;
@@ -524,12 +554,12 @@ static int rini_read_config_value_text(const char *buffer, char *text, char *des
     }
 
     // Clear text buffers to be updated
-    memset(text, 0, 64);
-    memset(desc, 0, 128);
+    memset(text, 0, RINI_MAX_TEXT_SIZE);
+    memset(desc, 0, RINI_MAX_DESC_SIZE);
 
     // Copy value-text and description to provided pointers
     memcpy(text, buffer_ptr, value_len);
-    memcpy(desc, buffer_ptr + desc_pos, ((len - desc_pos) > 127)? 127 : (len - desc_pos));
+    memcpy(desc, buffer_ptr + desc_pos, ((len - desc_pos) > (RINI_MAX_DESC_SIZE - 1))? (RINI_MAX_DESC_SIZE - 1) : (len - desc_pos));
 
     return len;
 }
