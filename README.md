@@ -1,9 +1,11 @@
-<img align="left" src="https://github.com/raysan5/rini/blob/master/logo/rini_256x256.png" width=256>
+<img align="left" src="https://github.com/raysan5/rini/blob/main/logo/rini_256x256.png" width=256>
 
 **rini is a simple and easy-to-use config init files reader and writer**
 
 `rini` is provided as a self-contained portable single-file header-only library with no external dependencies. 
 Its only dependency, the standard C library, can also be replaced with a custom implementation if required.
+
+Multiple configuration options are available through `#define` values.
 
 <br>
 <br>
@@ -18,6 +20,42 @@ Its only dependency, the standard C library, can also be replaced with a custom 
  - Support multi-word text values w/o quote delimiters
  - Minimal C standard lib dependency
  - Customizable maximum config values capacity
+
+## configuration
+
+`#define RINI_IMPLEMENTATION`
+
+Generates the implementation of the library into the included file.
+If not defined, the library is in header only mode and can be included in other headers
+or source files without problems. But only ONE file should hold the implementation.
+
+`#define RINI_MAX_CONFIG_CAPACITY`
+
+Define the maximum capacity of config data structure, customizable by user.
+Default value: 32 entries support
+
+`#define RINI_VALUE_DELIMITER`
+
+Defines a key value delimiter, in case it is defined.
+Most .ini files use '=' as value delimiter but ':' is also used or just whitespace
+Default value: ' '
+
+`#define RINI_LINE_COMMENT_DELIMITER`
+
+Define character used to comment lines, placed at beginning of line
+Most .ini files use semicolon ';' but '#' is also used
+Default value: '#'
+
+`#define RINI_VALUE_COMMENTS_DELIMITER`
+
+Defines a property line-end comment delimiter
+This implementation allows adding inline comments after the value.
+Default value: '#'
+
+`#define RINI_LINE_SECTION_DELIMITER`
+
+Defines section lines start character
+Sections loading is not supported, lines are just skipped for now
  
 ## basic functions
 
