@@ -256,7 +256,7 @@ static int rini_text_to_int(const char *text); // Convert text to int value (if 
 // Module functions declaration
 //----------------------------------------------------------------------------------
 // Load config from file (.ini)
-static rini_config rini_load_config(const char *file_name)
+rini_config rini_load_config(const char *file_name)
 {
     rini_config config = { 0 };
     unsigned int value_counter = 0;
