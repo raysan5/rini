@@ -272,7 +272,6 @@ rini_config rini_load_config(const char *file_name)
         if (rini_file != NULL)
         {
             char buffer[RINI_MAX_LINE_SIZE] = { 0 };    // Buffer to read every text line
-            char key[RINI_MAX_KEY_SIZE] = { 0 };
 
             // First pass to count valid config lines
             while (!feof(rini_file))
