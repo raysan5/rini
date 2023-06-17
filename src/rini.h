@@ -14,7 +14,7 @@
 *       - Support multi-word text values w/o quote delimiters
 *       - Minimal C standard lib dependency (optional)
 *       - Customizable maximum config values capacity
-* 
+*
 *   LIMITATIONS:
 *       - Config [sections] not supported
 *       - Saving config file requires complete rewrite
@@ -29,7 +29,7 @@
 *           Generates the implementation of the library into the included file.
 *           If not defined, the library is in header only mode and can be included in other headers
 *           or source files without problems. But only ONE file should hold the implementation.
-* 
+*
 *       #define RINI_MAX_LINE_SIZE
 *           Defines the maximum size of line buffer to read from file.
 *           Default value: 512 bytes (considering [key + text + desc] is 256 max size by default)
@@ -37,11 +37,11 @@
 *       #define RINI_MAX_KEY_SIZE
 *           Defines the maximum size of value key
 *           Default value: 64 bytes
-* 
+*
 *       #define RINI_MAX_TEXT_SIZE
 *           Defines the maximum size of value text
 *           Default value: 64 bytes
-* 
+*
 *       #define RINI_MAX_DESC_SIZE
 *           Defines the maximum size of value description
 *           Default value: 128 bytes
@@ -49,12 +49,12 @@
 *       #define RINI_MAX_VALUE_CAPACITY
 *           Defines the maximum number of values supported
 *           Default value: 32 entries support
-* 
+*
 *       #define RINI_VALUE_DELIMITER
 *           Defines a key value delimiter, in case it is defined.
 *           Most .ini files use '=' as value delimiter but ':' is also used or just whitespace
 *           Default value: ' '
-*   
+*
 *       #define RINI_LINE_COMMENT_DELIMITER
 *           Define character used to comment lines, placed at beginning of line
 *           Most .ini files use semicolon ';' but '#' is also used
@@ -64,7 +64,7 @@
 *           Defines a property line-end comment delimiter
 *           This implementation allows adding inline comments after the value.
 *           Default value: '#'
-* 
+*
 *       #define RINI_LINE_SECTION_DELIMITER
 *           Defines section lines start character
 *           Sections loading is not supported, lines are just skipped for now
@@ -210,11 +210,11 @@ RINIAPI const char *rini_get_config_value_description(rini_config config, const 
 // Set config value int/text and description for existing key or create a new entry
 // NOTE: When setting a text value, if id does not exist, a new entry is automatically created
 RINIAPI int rini_set_config_value(rini_config *config, const char *key, int value, const char *desc);
-RINIAPI int rini_set_config_value_text(rini_config *config, const char *key, const char *text, const char *desc); 
+RINIAPI int rini_set_config_value_text(rini_config *config, const char *key, const char *text, const char *desc);
 
 // Set config value description for existing key
 // WARNING: Key must exist to add description, if a description exists, it is updated
-RINIAPI int rini_set_config_value_description(rini_config *config, const char *key, const char *desc); 
+RINIAPI int rini_set_config_value_description(rini_config *config, const char *key, const char *desc);
 
 #ifdef __cplusplus
 }
@@ -262,7 +262,7 @@ rini_config rini_load_config(const char *file_name)
     unsigned int value_counter = 0;
 
     // Init config data to max capacity
-    config.capacity = RINI_MAX_VALUE_CAPACITY; 
+    config.capacity = RINI_MAX_VALUE_CAPACITY;
     config.values = (rini_config_value *)RINI_CALLOC(RINI_MAX_VALUE_CAPACITY, sizeof(rini_config_value));
 
     if (file_name != NULL)
@@ -282,7 +282,7 @@ rini_config rini_load_config(const char *file_name)
 
                 // Skip commented lines and empty lines
                 // NOTE: We are also skipping sections delimiters
-                if ((buffer[0] != RINI_LINE_COMMENT_DELIMITER) && 
+                if ((buffer[0] != RINI_LINE_COMMENT_DELIMITER) &&
                     (buffer[0] != RINI_LINE_SECTION_DELIMITER) &&
                     (buffer[0] != '\n') && (buffer[0] != '\0')) value_counter++;
             }
@@ -346,7 +346,7 @@ void rini_save_config(rini_config config, const char *file_name, const char *hea
 void rini_unload_config(rini_config *config)
 {
     RINI_FREE(config->values);
-    
+
     config->values = NULL;
     config->count = 0;
     config->capacity = 0;
@@ -356,7 +356,7 @@ void rini_unload_config(rini_config *config)
 int rini_get_config_value(rini_config config, const char *key)
 {
     int value = -1;
-    
+
     for (int i = 0; i < config.count; i++)
     {
         if (strcmp(key, config.values[i].key) == 0)
@@ -365,7 +365,7 @@ int rini_get_config_value(rini_config config, const char *key)
             break;
         }
     }
-    
+
     return value;
 }
 
@@ -373,7 +373,7 @@ int rini_get_config_value(rini_config config, const char *key)
 const char *rini_get_config_value_text(rini_config config, const char *key)
 {
     const char *text = NULL;
-    
+
     for (int i = 0; i < config.count; i++)
     {
         if (strcmp(key, config.values[i].key) == 0)
@@ -382,7 +382,7 @@ const char *rini_get_config_value_text(rini_config config, const char *key)
             break;
         }
     }
-    
+
     return text;
 }
 
@@ -390,7 +390,7 @@ const char *rini_get_config_value_text(rini_config config, const char *key)
 const char *rini_get_config_value_description(rini_config config, const char *key)
 {
     const char *desc = NULL;
-    
+
     for (int i = 0; i < config.count; i++)
     {
         if (strcmp(key, config.values[i].key) == 0)
@@ -399,7 +399,7 @@ const char *rini_get_config_value_description(rini_config config, const char *ke
             break;
         }
     }
-    
+
     return desc;
 }
 
