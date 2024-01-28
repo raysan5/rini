@@ -495,7 +495,7 @@ static int rini_read_config_key(const char *buffer, char *key)
 // Get config string-value from a buffer line containing id-value pair
 static int rini_read_config_value_text(const char *buffer, char *text, char *desc)
 {
-    char *buffer_ptr = buffer;
+    const char *buffer_ptr = buffer;
 
     // Expected config line structure:
     // [key][spaces?][delimiter?][spaces?]["?][textValue]["?][spaces?][[;][#]description?]
