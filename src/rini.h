@@ -331,7 +331,7 @@ void rini_save_config(rini_config config, const char *file_name, const char *hea
     {
         if (header != NULL) fprintf(rini_file, header);
 
-        for (int i = 0; i < config.count; i++)
+        for (unsigned int i = 0; i < config.count; i++)
         {
             // TODO: If text is not a number value, append text-quotes?
 
@@ -357,7 +357,7 @@ int rini_get_config_value(rini_config config, const char *key)
 {
     int value = -1;
 
-    for (int i = 0; i < config.count; i++)
+    for (unsigned int i = 0; i < config.count; i++)
     {
         if (strcmp(key, config.values[i].key) == 0)
         {
@@ -374,7 +374,7 @@ const char *rini_get_config_value_text(rini_config config, const char *key)
 {
     const char *text = NULL;
 
-    for (int i = 0; i < config.count; i++)
+    for (unsigned int i = 0; i < config.count; i++)
     {
         if (strcmp(key, config.values[i].key) == 0)
         {
@@ -391,7 +391,7 @@ const char *rini_get_config_value_description(rini_config config, const char *ke
 {
     const char *desc = NULL;
 
-    for (int i = 0; i < config.count; i++)
+    for (unsigned int i = 0; i < config.count; i++)
     {
         if (strcmp(key, config.values[i].key) == 0)
         {
@@ -425,7 +425,7 @@ int rini_set_config_value_text(rini_config *config, const char *key, const char 
     if ((text == NULL) || (text[0] == '\0')) return result;
 
     // Try to find key and update text and description
-    for (int i = 0; i < config->count; i++)
+    for (unsigned int i = 0; i < config->count; i++)
     {
         if (strcmp(key, config->values[i].key) == 0)
         {
@@ -464,7 +464,7 @@ int rini_set_config_value_description(rini_config *config, const char *key, cons
 {
     int result = 1;
 
-    for (int i = 0; i < config->count; i++)
+    for (unsigned int i = 0; i < config->count; i++)
     {
         if (strcmp(key, config->values[i].key) == 0)
         {
@@ -495,7 +495,7 @@ static int rini_read_config_key(const char *buffer, char *key)
 // Get config string-value from a buffer line containing id-value pair
 static int rini_read_config_value_text(const char *buffer, char *text, char *desc)
 {
-    const char *buffer_ptr = buffer;
+    char *buffer_ptr = (char *)buffer;
 
     // Expected config line structure:
     // [key][spaces?][delimiter?][spaces?]["?][textValue]["?][spaces?][[;][#]description?]
