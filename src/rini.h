@@ -22,7 +22,7 @@
 *   POSSIBLE IMPROVEMENTS:
 *       - Support config [sections]
 *       - Support disabled entries recognition
-*       - Config values update over existing files
+*       - Support comment lines and empty lines
 *
 *   CONFIGURATION:
 *       #define RINI_IMPLEMENTATION
