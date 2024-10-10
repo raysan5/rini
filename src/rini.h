@@ -306,7 +306,9 @@ rini_config rini_load_config(const char *file_name)
                     // but on Windows, when reading file 'rt', line endings are converted from \r\n to just \n
                     
                     // Skip commented lines and empty lines
-                    if ((buffer[0] != '#') && (buffer[0] != ';') && (buffer[0] != '\n') && (buffer[0] != '\0'))
+                    if ((buffer[0] != RINI_LINE_COMMENT_DELIMITER) &&
+                        (buffer[0] != RINI_LINE_SECTION_DELIMITER) &&
+                        (buffer[0] != '\n') && (buffer[0] != '\0')) value_counter++;
                     {
                         // Get keyentifier string
                         memset(config.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
@@ -377,7 +379,9 @@ rini_config rini_load_config_from_memory(const char *text)
             for (int l = 0; l < line_counter; l++)
             {
                 // Skip commented lines and empty lines
-                if ((lines[l][0] != '#') && (lines[l][0] != ';') && (lines[l][0] != '\n') && (lines[l][0] != '\0'))
+                if ((buffer[0] != RINI_LINE_COMMENT_DELIMITER) &&
+                    (buffer[0] != RINI_LINE_SECTION_DELIMITER) &&
+                    (buffer[0] != '\n') && (buffer[0] != '\0')) value_counter++;
                 {
                     // Get keyentifier string
                     memset(config.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
