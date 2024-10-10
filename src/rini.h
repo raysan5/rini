@@ -279,11 +279,10 @@ rini_config rini_load_config(const char *file_name)
             char buffer[RINI_MAX_LINE_SIZE] = { 0 };    // Buffer to read every text line
 
             // First pass to count valid config lines
-            while (!feof(rini_file))
+            while (fgets(buffer, RINI_MAX_LINE_SIZE, rini_file))
             {
                 // WARNING: fgets() keeps line endings, doesn't have any special options for converting line endings,
                 // but on Windows, when reading file 'rt', line endings are converted from \r\n to just \n
-                fgets(buffer, RINI_MAX_LINE_SIZE, rini_file);
 
                 // Skip commented lines and empty lines
                 // NOTE: We are also skipping sections delimiters
@@ -301,12 +300,11 @@ rini_config rini_load_config(const char *file_name)
                 value_counter = 0;
 
                 // Second pass to read config data
-                while (!feof(rini_file))
+                while (fgets(buffer, RINI_MAX_LINE_SIZE, rini_file))
                 {
                     // WARNING: fgets() keeps line endings, doesn't have any special options for converting line endings,
                     // but on Windows, when reading file 'rt', line endings are converted from \r\n to just \n
-                    fgets(buffer, RINI_MAX_LINE_SIZE, rini_file);
-
+                    
                     // Skip commented lines and empty lines
                     if ((buffer[0] != '#') && (buffer[0] != ';') && (buffer[0] != '\n') && (buffer[0] != '\0'))
                     {
