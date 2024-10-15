@@ -279,11 +279,10 @@ rini_config rini_load_config(const char *file_name)
             char buffer[RINI_MAX_LINE_SIZE] = { 0 };    // Buffer to read every text line
 
             // First pass to count valid config lines
-            while (!feof(rini_file))
+            while (fgets(buffer, RINI_MAX_LINE_SIZE, rini_file))
             {
                 // WARNING: fgets() keeps line endings, doesn't have any special options for converting line endings,
                 // but on Windows, when reading file 'rt', line endings are converted from \r\n to just \n
-                fgets(buffer, RINI_MAX_LINE_SIZE, rini_file);
 
                 // Skip commented lines and empty lines
                 // NOTE: We are also skipping sections delimiters
@@ -301,14 +300,15 @@ rini_config rini_load_config(const char *file_name)
                 value_counter = 0;
 
                 // Second pass to read config data
-                while (!feof(rini_file))
+                while (fgets(buffer, RINI_MAX_LINE_SIZE, rini_file))
                 {
                     // WARNING: fgets() keeps line endings, doesn't have any special options for converting line endings,
                     // but on Windows, when reading file 'rt', line endings are converted from \r\n to just \n
-                    fgets(buffer, RINI_MAX_LINE_SIZE, rini_file);
-
+                    
                     // Skip commented lines and empty lines
-                    if ((buffer[0] != '#') && (buffer[0] != ';') && (buffer[0] != '\n') && (buffer[0] != '\0'))
+                    if ((buffer[0] != RINI_LINE_COMMENT_DELIMITER) &&
+                        (buffer[0] != RINI_LINE_SECTION_DELIMITER) &&
+                        (buffer[0] != '\n') && (buffer[0] != '\0')) value_counter++;
                     {
                         // Get keyentifier string
                         memset(config.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
@@ -316,6 +316,10 @@ rini_config rini_load_config(const char *file_name)
                         rini_read_config_value_text(buffer, config.values[value_counter].text, config.values[value_counter].desc);
 
                         value_counter++;
+
+                        
+                        // Stop reading if first count reached to avoid overflow in case count == RINI_MAX_VALUE_CAPACITY
+                        if (value_counter >= config.count) break;
                     }
                 }
             }
@@ -379,7 +383,9 @@ rini_config rini_load_config_from_memory(const char *text)
             for (int l = 0; l < line_counter; l++)
             {
                 // Skip commented lines and empty lines
-                if ((lines[l][0] != '#') && (lines[l][0] != ';') && (lines[l][0] != '\n') && (lines[l][0] != '\0'))
+                if ((lines[l][0] != RINI_LINE_COMMENT_DELIMITER) &&
+                    (lines[l][0] != RINI_LINE_SECTION_DELIMITER) &&
+                    (lines[l][0] != '\n') && (lines[l][0] != '\0')) value_counter++;
                 {
                     // Get keyentifier string
                     memset(config.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
@@ -387,6 +393,9 @@ rini_config rini_load_config_from_memory(const char *text)
                     rini_read_config_value_text(lines[l], config.values[value_counter].text, config.values[value_counter].desc);
 
                     value_counter++;
+
+                    // Stop reading if first count reached to avoid overflow in case count == RINI_MAX_VALUE_CAPACITY
+                    if (value_counter >= config.count) break;
                 }
             }
         }
