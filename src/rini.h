@@ -332,9 +332,10 @@ rini_config rini_load_config(const char *file_name)
 }
 
 // Load config from text buffer
+// NOTE: Comments and empty lines are ignored
 rini_config rini_load_config_from_memory(const char *text)
 {
-    #define RINI_MAX_TEXT_LINES RINI_MAX_VALUE_CAPACITY*2       // Consider possible comments and empty lines
+    #define RINI_MAX_TEXT_LINES     RINI_MAX_VALUE_CAPACITY*2       // Consider possible comments and empty lines
 
     rini_config config = { 0 };
     unsigned int value_counter = 0;
@@ -415,7 +416,10 @@ void rini_save_config(rini_config config, const char *file_name, const char *hea
 
         for (unsigned int i = 0; i < config.count; i++)
         {
-            // TODO: If text is not a number value, append text-quotes?
+            // TODO: If text is not a number value, append text-quotes? --> YES
+            // i.e. --->PRODUCT_NAME "raylib"
+            //int value = atoi(config.values[i].text);  // Returns 0 if input not valid --> Check if (config.values[i].text len == 1 && config.values[i].text[0] == '0')
+            //float valuef = (float)atof(config.values[i].text); // Returns 0.0 if input not valid --> Check if (config.values[i].text len == 1 && config.values[i].text[0] == '0')
 
             fprintf(rini_file, "%-22s %c %6s      %c %s\n", config.values[i].key, RINI_VALUE_DELIMITER, config.values[i].text, RINI_VALUE_COMMENTS_DELIMITER, config.values[i].desc);
         }
@@ -427,8 +431,14 @@ void rini_save_config(rini_config config, const char *file_name, const char *hea
 // Save config to text buffer ('\0' EOL)
 char *rini_save_config_to_memory(rini_config config, const char *header)
 {
-    #define RINI_MAX_TEXT_FILE_SIZE  512
+    #define RINI_MAX_TEXT_FILE_SIZE  4096       
+    
+    // Verify required config size is smaller than memory buffer size
+    int requiredSize = 0;
+    for (int i = 0; i < config.count; i++) requiredSize += (strlen(config.values[i].key) + strlen(config.values[i].text) + strlen(config.values[i].desc));
+    if (requiredSize > RINI_MAX_TEXT_FILE_SIZE) RINI_LOG("WARNING: Required config.ini size is bigger than max supported memory size, increase RINI_MAX_TEXT_FILE_SIZE\n");
 
+    // NOTE: Using a static buffer to avoid de-allocation requirement on user side 
     static char text[RINI_MAX_TEXT_FILE_SIZE] = { 0 };
     memset(text, 0, RINI_MAX_TEXT_FILE_SIZE);
     int offset = 0;
