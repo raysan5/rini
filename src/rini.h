@@ -80,7 +80,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2023 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2023-2024 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -258,7 +258,7 @@ static int rini_read_config_value_text(const char *buffer, char *text, char *des
 static int rini_text_to_int(const char *text); // Convert text to int value (if possible), same as atoi()
 
 //----------------------------------------------------------------------------------
-// Module functions declaration
+// Module functions definition
 //----------------------------------------------------------------------------------
 // Load config from file (.ini)
 rini_config rini_load_config(const char *file_name)
