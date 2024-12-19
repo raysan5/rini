@@ -308,7 +308,7 @@ rini_config rini_load_config(const char *file_name)
                     // Skip commented lines and empty lines
                     if ((buffer[0] != RINI_LINE_COMMENT_DELIMITER) &&
                         (buffer[0] != RINI_LINE_SECTION_DELIMITER) &&
-                        (buffer[0] != '\n') && (buffer[0] != '\0')) value_counter++;
+                        (buffer[0] != '\n') && (buffer[0] != '\0'))
                     {
                         // Get keyentifier string
                         memset(config.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
@@ -317,7 +317,6 @@ rini_config rini_load_config(const char *file_name)
 
                         value_counter++;
 
-                        
                         // Stop reading if first count reached to avoid overflow in case count == RINI_MAX_VALUE_CAPACITY
                         if (value_counter >= config.count) break;
                     }
