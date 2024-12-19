@@ -310,7 +310,7 @@ rini_config rini_load_config(const char *file_name)
                         (buffer[0] != RINI_LINE_SECTION_DELIMITER) &&
                         (buffer[0] != '\n') && (buffer[0] != '\0'))
                     {
-                        // Get keyentifier string
+                        // Get key identifier string
                         memset(config.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
                         rini_read_config_key(buffer, config.values[value_counter].key);
                         rini_read_config_value_text(buffer, config.values[value_counter].text, config.values[value_counter].desc);
@@ -385,9 +385,9 @@ rini_config rini_load_config_from_memory(const char *text)
                 // Skip commented lines and empty lines
                 if ((lines[l][0] != RINI_LINE_COMMENT_DELIMITER) &&
                     (lines[l][0] != RINI_LINE_SECTION_DELIMITER) &&
-                    (lines[l][0] != '\n') && (lines[l][0] != '\0')) value_counter++;
+                    (lines[l][0] != '\n') && (lines[l][0] != '\0'))
                 {
-                    // Get keyentifier string
+                    // Get key identifier string
                     memset(config.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
                     rini_read_config_key(lines[l], config.values[value_counter].key);
                     rini_read_config_value_text(lines[l], config.values[value_counter].text, config.values[value_counter].desc);
