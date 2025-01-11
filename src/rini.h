@@ -433,8 +433,9 @@ char *rini_save_config_to_memory(rini_config config, const char *header)
     #define RINI_MAX_TEXT_FILE_SIZE  4096       
     
     // Verify required config size is smaller than memory buffer size
+    // NOTE: We add 64 extra possible characters by entry line
     int requiredSize = 0;
-    for (int i = 0; i < config.count; i++) requiredSize += (strlen(config.values[i].key) + strlen(config.values[i].text) + strlen(config.values[i].desc));
+    for (unsigned int i = 0; i < config.count; i++) requiredSize += ((int)strlen(config.values[i].key) + (int)strlen(config.values[i].text) + (int)strlen(config.values[i].desc) + 64);
     if (requiredSize > RINI_MAX_TEXT_FILE_SIZE) RINI_LOG("WARNING: Required config.ini size is bigger than max supported memory size, increase RINI_MAX_TEXT_FILE_SIZE\n");
 
     // NOTE: Using a static buffer to avoid de-allocation requirement on user side 
@@ -450,7 +451,7 @@ char *rini_save_config_to_memory(rini_config config, const char *header)
     for (unsigned int i = 0; i < config.count; i++)
     {
         // TODO: If text is not a number value, append text-quotes?
-        offset += sprintf(text + offset, "%-22s %c %6s      %c %s\n", config.values[i].key, RINI_VALUE_DELIMITER, config.values[i].text, RINI_VALUE_COMMENTS_DELIMITER, config.values[i].desc);
+        offset += sprintf(text + offset, "%-28s %c %6s      %c %s\n", config.values[i].key, RINI_VALUE_DELIMITER, config.values[i].text, RINI_VALUE_COMMENTS_DELIMITER, config.values[i].desc);
     }
 
     return text;
