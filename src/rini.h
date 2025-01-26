@@ -85,6 +85,7 @@
 *   VERSIONS HISTORY:
 *       2.0 (26-Jan-2023) ADDED: Support custom comment lines (as config entries)
 *                         ADDED: Use of quotation-marks and marks customization
+*                         ADDED: rini_set_config_comment_line()
 *                         ADDED: rini_get_config_value_fallback(), with fallback return value
 *                         ADDED: rini_get_config_text_fallback(), with fallback return value
 *                         REMOVED: Config header requirement, use comments entries
@@ -243,6 +244,8 @@ RINIAPI const char *rini_get_config_value_description(rini_config config, const 
 
 RINIAPI int rini_get_config_value_fallback(rini_config config, const char *key, int fallback); // Get config value for provided key with default value fallback if not found or not valid
 RINIAPI const char *rini_get_config_value_text_fallback(rini_config config, const char *key, const char *fallback); // Get config value text for provided key with fallback if not found or not valid
+
+RINIAPI int rini_set_config_comment_line(rini_config *config, const char *comment); // Set config comment line
 
 // Set config value int/text and description for existing key or create a new entry
 // NOTE: When setting a text value, if id does not exist, a new entry is automatically created
@@ -628,6 +631,17 @@ const char *rini_get_config_value_description(rini_config config, const char *ke
     }
 
     return desc;
+}
+
+// Set config comment line
+int rini_set_config_comment_line(rini_config *config, const char *comment)
+{
+    int result = -1;
+    char text[2] = { RINI_LINE_COMMENT_DELIMITER, '\0' };
+    
+    result = rini_set_config_value_text(config, NULL, text, comment);
+    
+    return result;
 }
 
 // Set config value and description for existing key or create a new entry
