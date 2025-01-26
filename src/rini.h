@@ -447,8 +447,8 @@ void rini_save_config(rini_config config, const char *file_name)
         {
             if ((config.values[i].key[0] == '\0') && (config.values[i].text[0] == RINI_LINE_COMMENT_DELIMITER))
             {
-                if (config.values[i].desc[0] != '\0') fprintf(rini_file, "%s %s\n", RINI_LINE_COMMENT_DELIMITER, config.values[i].desc);
-                else fprintf(rini_file, "%s\n", RINI_LINE_COMMENT_DELIMITER);
+                if (config.values[i].desc[0] != '\0') fprintf(rini_file, "%c %s\n", RINI_LINE_COMMENT_DELIMITER, config.values[i].desc);
+                else fprintf(rini_file, "%c\n", RINI_LINE_COMMENT_DELIMITER);
             }
             else
             {
@@ -501,8 +501,8 @@ char *rini_save_config_to_memory(rini_config config)
     {
         if ((config.values[i].key[0] == '\0') && (config.values[i].text[0] == RINI_LINE_COMMENT_DELIMITER))
         {
-            if (config.values[i].desc[0] != '\0') offset += sprintf(rini_file, "%s %s\n", RINI_LINE_COMMENT_DELIMITER, config.values[i].desc);
-            else offset += sprintf(rini_file, "%s\n", RINI_LINE_COMMENT_DELIMITER);
+            if (config.values[i].desc[0] != '\0') offset += sprintf(text + offset, "%c %s\n", RINI_LINE_COMMENT_DELIMITER, config.values[i].desc);
+            else offset += sprintf(text + offset, "%c\n", RINI_LINE_COMMENT_DELIMITER);
         }
         else
         {
@@ -651,18 +651,21 @@ int rini_set_config_value_text(rini_config *config, const char *key, const char 
 
     if ((text == NULL) || (text[0] == '\0')) return result;
 
-    // Try to find key and update text and description
-    for (unsigned int i = 0; i < config->count; i++)
+    if (key != NULL)
     {
-        if (strcmp(key, config->values[i].key) == 0) // Key found
+        // Try to find key and update text and description
+        for (unsigned int i = 0; i < config->count; i++)
         {
-            memset(config->values[i].text, 0, RINI_MAX_TEXT_SIZE);
-            memcpy(config->values[i].text, text, strlen(text));
+            if (strcmp(key, config->values[i].key) == 0) // Key found
+            {
+                memset(config->values[i].text, 0, RINI_MAX_TEXT_SIZE);
+                memcpy(config->values[i].text, text, strlen(text));
 
-            memset(config->values[i].desc, 0, RINI_MAX_DESC_SIZE);
-            if (desc != NULL) memcpy(config->values[i].desc, desc, strlen(desc));
-            result = 0;
-            break;
+                memset(config->values[i].desc, 0, RINI_MAX_DESC_SIZE);
+                if (desc != NULL) memcpy(config->values[i].desc, desc, strlen(desc));
+                result = 0;
+                break;
+            }
         }
     }
 
