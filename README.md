@@ -15,11 +15,13 @@ Multiple configuration options are available through `#define` values.
 
  - Config files reading and writing
  - Supported value types: int, string
- - Support custom line comment character
- - Support custom property delimiters
- - Support inline comments with custom delimiter
+ - Support comment lines and empty lines
+ - Support custom line comment delimiter
+ - Support custom value delimiters
+ - Support value description comments
+ - Support custom description custom delimiter
  - Support multi-word text values w/o quote delimiters
- - Minimal C standard lib dependency
+ - Minimal C standard lib dependency (optional)
  - Customizable maximum config values capacity
 
 ## configuration
@@ -35,17 +37,16 @@ or source files without problems. But only ONE file should hold the implementati
 Define the maximum capacity of config data structure, customizable by user.
 Default value: 32 entries support
 
-`#define RINI_VALUE_DELIMITER`
-
-Defines a key value delimiter, in case it is defined.
-Most .ini files use '=' as value delimiter but ':' is also used or just whitespace
-Default value: ' '
-
 `#define RINI_LINE_COMMENT_DELIMITER`
 
 Define character used to comment lines, placed at beginning of line
 Most .ini files use semicolon ';' but '#' is also used
 Default value: '#'
+
+`#define RINI_LINE_SECTION_DELIMITER`
+
+Defines section lines start character
+Sections loading is not supported, lines are just skipped for now
 
 `#define RINI_VALUE_COMMENTS_DELIMITER`
 
@@ -53,10 +54,24 @@ Defines a property line-end comment delimiter
 This implementation allows adding inline comments after the value.
 Default value: '#'
 
-`#define RINI_LINE_SECTION_DELIMITER`
+`#define RINI_VALUE_DELIMITER`
 
-Defines section lines start character
-Sections loading is not supported, lines are just skipped for now
+Defines a key value delimiter, in case it is defined.
+Most .ini files use '=' as value delimiter but ':' is also used or just whitespace
+Default value: ' '
+
+`#define RINI_VALUE_QUOTATION_MARKS`
+
+Defines quotation marks to be used around text values 
+Text values are determined checking text with atoi(), only for integer values,
+in case of float values they are always considered as text
+Default value: '\"'
+
+`#define RINI_DESCRIPTION_DELIMITER`
+
+Defines a property line-end comment delimiter
+This implementation allows adding inline comments after the value.
+Default value: '#'
  
 ## basic functions
 
@@ -67,7 +82,7 @@ void rini_unload_config(rini_config *config);
 
 // Save config to file, with custom header (if provided)
 // NOTE: Only full config file rewrite supported, no partial updates
-void rini_save_config(rini_config config, const char *file_name, const char *header);
+void rini_save_config(rini_config config, const char *file_name);
 
 // Get config value int/text/description for provided key, returns -1 or NULL if not found
 int rini_get_config_value(rini_config config, const char *key);
@@ -124,6 +139,14 @@ int main()
     // Create empty config with 32 entries (RINI_MAX_CONFIG_CAPACITY)
     rini_config config = rini_load_config(NULL);
 
+    // Define header comment lines
+    rini_set_config_text(&config, NULL, RINI_LINE_COMMENT_DELIMITER, "Initialization configuration options");
+    rini_set_config_text(&config, NULL, RINI_LINE_COMMENT_DELIMITER, NULL);
+    rini_set_config_text(&config, NULL, RINI_LINE_COMMENT_DELIMITER, "NOTE: This file is loaded at application startup,");
+    rini_set_config_text(&config, NULL, RINI_LINE_COMMENT_DELIMITER, "if file is not found, default values are applied");
+    rini_set_config_text(&config, NULL, RINI_LINE_COMMENT_DELIMITER, NULL);
+
+    // Define config values
     rini_set_config_value(&config, "SHOW_WINDOW_SPONSORS", 1, "Show sponsors window at initialization");
     rini_set_config_value(&config, "SHOW_WINDOW_INFO", 0, "Show image info window");
     rini_set_config_value(&config, "SHOW_WINDOW_EDIT", 0, "Show image edit window");
@@ -131,13 +154,6 @@ int main()
     rini_set_config_value(&config, "IMAGE_BACKGROUND", 0, "Image background style: 0-None, 1-Checked, 2-Black, 3-Magenta");
     rini_set_config_value(&config, "VISUAL_STYLE", 2, "UI visual style selected: 0-9");
     rini_set_config_value(&config, "CLEAN_WINDOW_MODE", 0, "Clean window mode enabled");
-
-    const char *ini_header = "#\n"
-       "# rTexViewer configurable initialization options\n"
-       "#\n"
-       "# NOTE: This file can be deleted without problem,\n"
-       "# in that case, all values are reseted to default\n"
-       "#\n";
 
     rini_save_config(config, "config.ini", ini_header);
 
