@@ -140,11 +140,12 @@ int main()
     rini_config config = rini_load_config(NULL);
 
     // Define header comment lines
-    rini_set_config_text(&config, NULL, RINI_LINE_COMMENT_DELIMITER, "Initialization configuration options");
-    rini_set_config_text(&config, NULL, RINI_LINE_COMMENT_DELIMITER, NULL);
-    rini_set_config_text(&config, NULL, RINI_LINE_COMMENT_DELIMITER, "NOTE: This file is loaded at application startup,");
-    rini_set_config_text(&config, NULL, RINI_LINE_COMMENT_DELIMITER, "if file is not found, default values are applied");
-    rini_set_config_text(&config, NULL, RINI_LINE_COMMENT_DELIMITER, NULL);
+    rini_set_config_comment_line(&config, NULL);   // Empty comment line, but including comment prefix delimiter
+    rini_set_config_comment_line(&config, "rTexViewer initialization configuration options");
+    rini_set_config_comment_line(&config, NULL);
+    rini_set_config_comment_line(&config, "NOTE: This file is loaded at application startup,");
+    rini_set_config_comment_line(&config, "if file is not found, default values are applied");
+    rini_set_config_comment_line(&config, NULL);
 
     // Define config values
     rini_set_config_value(&config, "SHOW_WINDOW_SPONSORS", 1, "Show sponsors window at initialization");
