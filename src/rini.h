@@ -1,6 +1,6 @@
 /**********************************************************************************************
 *
-*   rini v1.0 - A simple and easy-to-use config init files reader and writer
+*   rini v2.0 - A simple and easy-to-use config init files reader and writer
 *
 *   DESCRIPTION:
 *       Load and save config init properties
@@ -493,7 +493,7 @@ char *rini_save_config_to_memory(rini_config config)
     // NOTE: We add 64 extra possible characters by entry line
     int requiredSize = 0;
     for (unsigned int i = 0; i < config.count; i++) requiredSize += ((int)strlen(config.values[i].key) + (int)strlen(config.values[i].text) + (int)strlen(config.values[i].desc) + 64);
-    if (requiredSize > RINI_MAX_TEXT_FILE_SIZE) RINI_LOG("WARNING: Required config.ini size is bigger than max supported memory size, increase RINI_MAX_TEXT_FILE_SIZE\n");
+    if (requiredSize > RINI_MAX_TEXT_FILE_SIZE) RINI_LOG("WARNING: Required config file size is bigger than max supported memory size, increase RINI_MAX_TEXT_FILE_SIZE\n");
 
     // NOTE: Using a static buffer to avoid de-allocation requirement on user side
     static char text[RINI_MAX_TEXT_FILE_SIZE] = { 0 };
