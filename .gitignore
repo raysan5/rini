@@ -74,4 +74,4 @@ dkms.conf
 *.ilk
 *.log
 .vs
-
+.idea
