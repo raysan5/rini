@@ -473,11 +473,12 @@ void rini_save(rini_data data, const char *file_name)
             }
             else
             {
+                memset(valuestr, 0, 130); 
 #if RINI_USE_TEXT_QUOTATION_MARKS
                 // Add quotation marks if required
-                if (data.values[i].isText) snprintf(valuestr, 130, "%c%s%c\0", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
+                if (data.values[i].isText) snprintf(valuestr, 130, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
 #else
-                snprintf(valuestr, 130, "%s\0", data.values[i].text);
+                snprintf(valuestr, 130, "%s", data.values[i].text);
 #endif
                 fprintf(rini_file, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
                     RINI_VALUE_SPACING, data.values[i].isText? valuestr : data.values[i].text, 
@@ -516,11 +517,12 @@ char *rini_save_to_memory(rini_data data)
         }
         else
         {
+            memset(valuestr, 0, 130); 
 #if RINI_USE_TEXT_QUOTATION_MARKS
             // Add quotation marks if required
-            if (data.values[i].isText) snprintf(valuestr, 130, "%c%s%c\0", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
+            if (data.values[i].isText) snprintf(valuestr, 130, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
 #else
-            snprintf(valuestr, 130, "%s\0", data.values[i].text);
+            snprintf(valuestr, 130, "%s", data.values[i].text);
 #endif
             offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
                     RINI_VALUE_SPACING, data.values[i].isText? valuestr : data.values[i].text, 
