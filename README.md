@@ -1,6 +1,6 @@
 <img align="left" src="https://github.com/raysan5/rini/blob/main/logo/rini_256x256.png" width=256>
 
-**rini is a simple and easy-to-use config init files reader and writer**
+**rini is a simple and easy-to-use ini-style files reader and writer**
 
 `rini` is provided as a self-contained portable single-file header-only library with no external dependencies. 
 Its only dependency, the standard C library, can also be replaced with a custom implementation if required.
@@ -13,7 +13,7 @@ Multiple configuration options are available through `#define` values.
 
 ## features
 
- - Config files reading and writing
+ - Init/Config files reading and writing
  - Supported value types: int, string
  - Support comment lines and empty lines
  - Support custom line comment delimiter
@@ -22,7 +22,7 @@ Multiple configuration options are available through `#define` values.
  - Support custom description custom delimiter
  - Support multi-word text values w/o quote delimiters
  - Minimal C standard lib dependency (optional)
- - Customizable maximum config values capacity
+ - Customizable maximum values capacity
 
 ## configuration
 
@@ -32,9 +32,9 @@ Generates the implementation of the library into the included file.
 If not defined, the library is in header only mode and can be included in other headers
 or source files without problems. But only ONE file should hold the implementation.
 
-`#define RINI_MAX_CONFIG_CAPACITY`
+`#define RINI_MAX_VALUE_CAPACITY`
 
-Define the maximum capacity of config data structure, customizable by user.
+Define the maximum capacity of key-value data structure, customizable by user.
 Default value: 32 entries support
 
 `#define RINI_LINE_COMMENT_DELIMITER`
@@ -101,64 +101,64 @@ int rini_set_config_value_description(rini_config *config, const char *key, cons
 
 ## limitations
 
- - Config `[sections]` not supported
- - Saving config file requires complete rewrite
+ - `[sections]` not supported
+ - Saving file requires complete rewrite
 
 ## usage example
 
-Load an existing config file
+Load an existing file
 ```c
 #define RINI_IMPLEMENTATION
 #include "rini.h"
 
 int main()
 {
-    rini_config config = rini_load_config("config.ini");
+    rini_data config = rini_load("config.ini");
 
-    int show_window_sponsors_value = rini_get_config_value(config, "SHOW_WINDOW_SPONSORS");
-    int show_window_info_value = rini_get_config_value(config, "SHOW_WINDOW_INFO");
-    int show_window_edit_value = rini_get_config_value(config, "SHOW_WINDOW_EDIT");
-    int image_scale_filter_value = rini_get_config_value(config, "IMAGE_SCALE_FILTER");
-    int image_background_value = rini_get_config_value(config, "IMAGE_BACKGROUND");
-    int visual_style_value = rini_get_config_value(config, "VISUAL_STYLE");
-    int clean_window_mode_value = rini_get_config_value(config, "CLEAN_WINDOW_MODE");
+    int show_window_sponsors_value = rini_get_value(config, "SHOW_WINDOW_SPONSORS");
+    int show_window_info_value = rini_get_value(config, "SHOW_WINDOW_INFO");
+    int show_window_edit_value = rini_get_value(config, "SHOW_WINDOW_EDIT");
+    int image_scale_filter_value = rini_get_value(config, "IMAGE_SCALE_FILTER");
+    int image_background_value = rini_get_value(config, "IMAGE_BACKGROUND");
+    int visual_style_value = rini_get_value(config, "VISUAL_STYLE");
+    int clean_window_mode_value = rini_get_value(config, "CLEAN_WINDOW_MODE");
 
-    rini_unload_config(&config);
+    rini_unload(&config);
 
     return 0;
 }
 ```
 
-Save a custom config file:
+Save a custom file:
 ```c
 #define RINI_IMPLEMENTATION
 #include "rini.h"
 
 int main()
 {
-    // Create empty config with 32 entries (RINI_MAX_CONFIG_CAPACITY)
-    rini_config config = rini_load_config(NULL);
+    // Create empty file with 32 entries (RINI_MAX_VALUES_CAPACITY)
+    rini_data config = rini_load(NULL);
 
     // Define header comment lines
-    rini_set_config_comment_line(&config, NULL);   // Empty comment line, but including comment prefix delimiter
-    rini_set_config_comment_line(&config, "rTexViewer initialization configuration options");
-    rini_set_config_comment_line(&config, NULL);
-    rini_set_config_comment_line(&config, "NOTE: This file is loaded at application startup,");
-    rini_set_config_comment_line(&config, "if file is not found, default values are applied");
-    rini_set_config_comment_line(&config, NULL);
+    rini_set_comment_line(&config, NULL);   // Empty comment line, but including comment prefix delimiter
+    rini_set_comment_line(&config, "rTexViewer initialization configuration options");
+    rini_set_comment_line(&config, NULL);
+    rini_set_comment_line(&config, "NOTE: This file is loaded at application startup,");
+    rini_set_comment_line(&config, "if file is not found, default values are applied");
+    rini_set_comment_line(&config, NULL);
 
-    // Define config values
-    rini_set_config_value(&config, "SHOW_WINDOW_SPONSORS", 1, "Show sponsors window at initialization");
-    rini_set_config_value(&config, "SHOW_WINDOW_INFO", 0, "Show image info window");
-    rini_set_config_value(&config, "SHOW_WINDOW_EDIT", 0, "Show image edit window");
-    rini_set_config_value(&config, "IMAGE_SCALE_FILTER", 1, "Image scale filter enabled: 0-Point, 1-Bilinear");
-    rini_set_config_value(&config, "IMAGE_BACKGROUND", 0, "Image background style: 0-None, 1-Checked, 2-Black, 3-Magenta");
-    rini_set_config_value(&config, "VISUAL_STYLE", 2, "UI visual style selected: 0-9");
-    rini_set_config_value(&config, "CLEAN_WINDOW_MODE", 0, "Clean window mode enabled");
+    // Define values
+    rini_set_value(&config, "SHOW_WINDOW_SPONSORS", 1, "Show sponsors window at initialization");
+    rini_set_value(&config, "SHOW_WINDOW_INFO", 0, "Show image info window");
+    rini_set_value(&config, "SHOW_WINDOW_EDIT", 0, "Show image edit window");
+    rini_set_value(&config, "IMAGE_SCALE_FILTER", 1, "Image scale filter enabled: 0-Point, 1-Bilinear");
+    rini_set_value(&config, "IMAGE_BACKGROUND", 0, "Image background style: 0-None, 1-Checked, 2-Black, 3-Magenta");
+    rini_set_value(&config, "VISUAL_STYLE", 2, "UI visual style selected: 0-9");
+    rini_set_value(&config, "CLEAN_WINDOW_MODE", 0, "Clean window mode enabled");
 
-    rini_save_config(config, "config.ini", ini_header);
+    rini_save(config, "config.ini", ini_header);
 
-    rini_unload_config(&config);
+    rini_unload(&config);
     
     return 0;
 }
