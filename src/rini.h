@@ -83,7 +83,10 @@
 *       - string.h: memset(), memcpy(), strcmp(), strlen()
 *
 *   VERSIONS HISTORY:
-*       2.0 (26-Jan-2023) ADDED: Support custom comment lines (as config entries)
+*       3.0 (xx-May-2025) ADDED: Property to set entries as text or value
+*                         ADDED: Key and Value spacing defines
+*
+*       2.0 (26-Jan-2024) ADDED: Support custom comment lines (as config entries)
 *                         ADDED: Use of quotation-marks and marks customization
 *                         ADDED: rini_set_config_comment_line()
 *                         ADDED: rini_get_config_value_fallback(), with fallback return value
@@ -120,7 +123,7 @@
 #ifndef RINI_H
 #define RINI_H
 
-#define RINI_VERSION    "1.0"
+#define RINI_VERSION    "2.0"
 
 // Function specifiers in case library is build/used as a shared library (Windows)
 // NOTE: Microsoft specifiers to tell compiler that symbols are imported/exported from a .dll
@@ -180,6 +183,17 @@
     #define RINI_MAX_VALUE_CAPACITY         128
 #endif
 
+// Total space reserved for Key,
+// Value starts after this spacing
+#if !defined(RINI_KEY_SPACING)
+    #define RINI_KEY_SPACING                 36
+#endif
+// Total space reserved for Value,
+// Description starts after this spacing
+#if !defined(RINI_VALUE_SPACING)
+    #define RINI_VALUE_SPACING               32
+#endif
+
 // Line comment delimiter (starting string)
 #if !defined(RINI_LINE_COMMENT_DELIMITER)
     #define RINI_LINE_COMMENT_DELIMITER     '#'
@@ -216,6 +230,7 @@ typedef struct {
     char key[RINI_MAX_KEY_SIZE];    // Config value key identifier
     char text[RINI_MAX_TEXT_SIZE];  // Config value text
     char desc[RINI_MAX_DESC_SIZE];  // Config value description
+    bool isText;                    // Value should be considered as text 
 } rini_config_value;
 
 // Config data
@@ -446,6 +461,8 @@ void rini_save_config(rini_config config, const char *file_name)
 
     if (rini_file != NULL)
     {
+        char valuestr[128 + 2] = { 0 }; // Useful for text processing, adding quotation marks if required
+
         for (unsigned int i = 0; i < config.count; i++)
         {
             if ((config.values[i].key[0] == '\0') && (config.values[i].text[0] == RINI_LINE_COMMENT_DELIMITER))
@@ -456,27 +473,14 @@ void rini_save_config(rini_config config, const char *file_name)
             else
             {
 #if RINI_USE_TEXT_QUOTATION_MARKS
-                // If text is not an integer value, append text quotation-marks
-                // TODO: Check also for float values? atof()
-                bool valueIsInt = false;
-                int value = atoi(config.values[i].text);  // WARNING: Returns 0 if input not valid --> Check if (config.values[i].text len == 1 && config.values[i].text[0] == '0')
-                if (((value == 0) && (strlen(config.values[i].text) == 1) && (config.values[i].text[0] == '0')) || (value != 0)) valueIsInt = true;
-
-                if (valueIsInt)
-                {
-                    fprintf(rini_file, "%-28s %c %6s      %c %s\n", config.values[i].key, RINI_VALUE_DELIMITER,
-                        config.values[i].text, RINI_DESCRIPTION_DELIMITER, config.values[i].desc);
-                }
-                else
-                {
-                    fprintf(rini_file, "%-28s %c %c%6s%c      %c %s\n", config.values[i].key, RINI_VALUE_DELIMITER,
-                        RINI_VALUE_QUOTATION_MARKS, config.values[i].text, RINI_VALUE_QUOTATION_MARKS,
-                        RINI_DESCRIPTION_DELIMITER, config.values[i].desc);
-                }
+                // Add quotation marks if required
+                if (config.values[i].isText) snprintf(valuestr, 130, "%c%s%c\0", RINI_VALUE_QUOTATION_MARKS, config.values[i].text, RINI_VALUE_QUOTATION_MARKS);
 #else
-                fprintf(rini_file, "%-28s %c %6s      %c %s\n", config.values[i].key, RINI_VALUE_DELIMITER,
-                        config.values[i].text, RINI_DESCRIPTION_DELIMITER, config.values[i].desc);
+                snprintf(valuestr, 130, "%s\0", config.values[i].text);
 #endif
+                fprintf(rini_file, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, config.values[i].key, RINI_VALUE_DELIMITER,
+                    RINI_VALUE_SPACING, config.values[i].isText? valuestr : config.values[i].text, 
+                    RINI_DESCRIPTION_DELIMITER, config.values[i].desc);
             }
         }
 
@@ -493,44 +497,33 @@ char *rini_save_config_to_memory(rini_config config)
     // NOTE: We add 64 extra possible characters by entry line
     int requiredSize = 0;
     for (unsigned int i = 0; i < config.count; i++) requiredSize += ((int)strlen(config.values[i].key) + (int)strlen(config.values[i].text) + (int)strlen(config.values[i].desc) + 64);
-    if (requiredSize > RINI_MAX_TEXT_FILE_SIZE) RINI_LOG("WARNING: Required config file size is bigger than max supported memory size, increase RINI_MAX_TEXT_FILE_SIZE\n");
+    if (requiredSize > RINI_MAX_TEXT_FILE_SIZE) RINI_LOG("WARNING: Required config.ini size is bigger than max supported memory size, increase RINI_MAX_TEXT_FILE_SIZE\n");
 
     // NOTE: Using a static buffer to avoid de-allocation requirement on user side
     static char text[RINI_MAX_TEXT_FILE_SIZE] = { 0 };
     memset(text, 0, RINI_MAX_TEXT_FILE_SIZE);
     int offset = 0;
 
+    char valuestr[128 + 2] = { 0 }; // Useful for text processing, adding quotation marks if required
+
     for (unsigned int i = 0; i < config.count; i++)
     {
         if ((config.values[i].key[0] == '\0') && (config.values[i].text[0] == RINI_LINE_COMMENT_DELIMITER))
         {
-            if (config.values[i].desc[0] != '\0') offset += sprintf(text + offset, "%c %s\n", RINI_LINE_COMMENT_DELIMITER, config.values[i].desc);
-            else offset += sprintf(text + offset, "%c\n", RINI_LINE_COMMENT_DELIMITER);
+            if (config.values[i].desc[0] != '\0') offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%c %s\n", RINI_LINE_COMMENT_DELIMITER, config.values[i].desc);
+            else offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%c\n", RINI_LINE_COMMENT_DELIMITER);
         }
         else
         {
 #if RINI_USE_TEXT_QUOTATION_MARKS
-            // If text is not an integer value, append text quotation-marks
-            // TODO: Check also for float values? atof()
-            bool valueIsInt = false;
-            int value = atoi(config.values[i].text);  // WARNING: Returns 0 if input not valid --> Check if (config.values[i].text len == 1 && config.values[i].text[0] == '0')
-            if (((value == 0) && (strlen(config.values[i].text) == 1) && (config.values[i].text[0] == '0')) || (value != 0)) valueIsInt = true;
-
-            if (valueIsInt)
-            {
-                offset += sprintf(text + offset, "%-28s %c %6s      %c %s\n", config.values[i].key, RINI_VALUE_DELIMITER,
-                    config.values[i].text, RINI_DESCRIPTION_DELIMITER, config.values[i].desc);
-            }
-            else
-            {
-                offset += sprintf(text + offset, "%-28s %c %c%6s%c      %c %s\n", config.values[i].key, RINI_VALUE_DELIMITER,
-                    RINI_VALUE_QUOTATION_MARKS, config.values[i].text, RINI_VALUE_QUOTATION_MARKS,
-                    RINI_DESCRIPTION_DELIMITER, config.values[i].desc);
-            }
+            // Add quotation marks if required
+            if (config.values[i].isText) snprintf(valuestr, 130, "%c%s%c\0", RINI_VALUE_QUOTATION_MARKS, config.values[i].text, RINI_VALUE_QUOTATION_MARKS);
 #else
-            offset += sprintf(text + offset, "%-28s %c %6s      %c %s\n", config.values[i].key, RINI_VALUE_DELIMITER,
-                config.values[i].text, RINI_DESCRIPTION_DELIMITER, config.values[i].desc);
+            snprintf(valuestr, 130, "%s\0", config.values[i].text);
 #endif
+            offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, config.values[i].key, RINI_VALUE_DELIMITER,
+                    RINI_VALUE_SPACING, config.values[i].isText? valuestr : config.values[i].text, 
+                    RINI_DESCRIPTION_DELIMITER, config.values[i].desc);
         }
     }
 
@@ -650,9 +643,11 @@ int rini_set_config_value(rini_config *config, const char *key, int value, const
     int result = -1;
     char value_text[RINI_MAX_TEXT_SIZE] = { 0 };
 
-    sprintf(value_text, "%i", value);
+    snprintf(value_text, RINI_MAX_TEXT_SIZE, "%i", value);
 
     result = rini_set_config_value_text(config, key, value_text, desc);
+
+    config->values[config->count - 1].isText = false;
 
     return result;
 }
@@ -693,7 +688,8 @@ int rini_set_config_value_text(rini_config *config, const char *key, const char 
             {
                 config->values[config->count].key[0] = '\0';
                 config->values[config->count].text[0] = RINI_LINE_COMMENT_DELIMITER;
-                if (desc != NULL) for (int i = 0; (i < RINI_MAX_DESC_SIZE) && (desc[i] != '\0'); i++) config->values[config->count].desc[i] = desc[i];
+                if (desc != NULL) for (int i = 0; (i < RINI_MAX_DESC_SIZE) && (desc[i] != '\0'); i++) 
+                    config->values[config->count].desc[i] = desc[i];
                 else config->values[config->count].desc[0] = '\0';
             }
             else
@@ -704,6 +700,7 @@ int rini_set_config_value_text(rini_config *config, const char *key, const char 
                 for (int i = 0; (i < RINI_MAX_DESC_SIZE) && (desc[i] != '\0'); i++) config->values[config->count].desc[i] = desc[i];
             }
 
+            config->values[config->count].isText = true;
             config->count++;
             result = 0;
         }
