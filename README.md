@@ -84,7 +84,7 @@ void rini_unload_config(rini_config *config);
 // NOTE: Only full config file rewrite supported, no partial updates
 void rini_save_config(rini_config config, const char *file_name);
 
-// Get config value int/text/description for provided key, returns -1 or NULL if not found
+// Get config value int/text/description for provided key, returns 0 or NULL if not found
 int rini_get_config_value(rini_config config, const char *key);
 const char *rini_get_config_value_text(rini_config config, const char *key); 
 const char *rini_get_config_value_description(rini_config config, const char *key);
@@ -113,17 +113,17 @@ Load an existing file
 
 int main()
 {
-    rini_data config = rini_load("config.ini");
+    rini_data config = rini_load_config("config.ini");
 
-    int show_window_sponsors_value = rini_get_value(config, "SHOW_WINDOW_SPONSORS");
-    int show_window_info_value = rini_get_value(config, "SHOW_WINDOW_INFO");
-    int show_window_edit_value = rini_get_value(config, "SHOW_WINDOW_EDIT");
-    int image_scale_filter_value = rini_get_value(config, "IMAGE_SCALE_FILTER");
-    int image_background_value = rini_get_value(config, "IMAGE_BACKGROUND");
-    int visual_style_value = rini_get_value(config, "VISUAL_STYLE");
-    int clean_window_mode_value = rini_get_value(config, "CLEAN_WINDOW_MODE");
+    int show_window_sponsors_value = rini_get_config_value(config, "SHOW_WINDOW_SPONSORS");
+    int show_window_info_value = rini_get_config_value(config, "SHOW_WINDOW_INFO");
+    int show_window_edit_value = rini_get_config_value(config, "SHOW_WINDOW_EDIT");
+    int image_scale_filter_value = rini_get_config_value(config, "IMAGE_SCALE_FILTER");
+    int image_background_value = rini_get_config_value(config, "IMAGE_BACKGROUND");
+    int visual_style_value = rini_get_config_value(config, "VISUAL_STYLE");
+    int clean_window_mode_value = rini_get_config_value(config, "CLEAN_WINDOW_MODE");
 
-    rini_unload(&config);
+    rini_unload_config(&config);
 
     return 0;
 }
@@ -137,28 +137,28 @@ Save a custom file:
 int main()
 {
     // Create empty file with 32 entries (RINI_MAX_VALUES_CAPACITY)
-    rini_data config = rini_load(NULL);
+    rini_data config = rini_load_config(NULL);
 
     // Define header comment lines
-    rini_set_comment_line(&config, NULL);   // Empty comment line, but including comment prefix delimiter
-    rini_set_comment_line(&config, "rTexViewer initialization configuration options");
-    rini_set_comment_line(&config, NULL);
-    rini_set_comment_line(&config, "NOTE: This file is loaded at application startup,");
-    rini_set_comment_line(&config, "if file is not found, default values are applied");
-    rini_set_comment_line(&config, NULL);
+    rini_set_config_comment_line(&config, NULL);   // Empty comment line, but including comment prefix delimiter
+    rini_set_config_comment_line(&config, "rTexViewer initialization configuration options");
+    rini_set_config_comment_line(&config, NULL);
+    rini_set_config_comment_line(&config, "NOTE: This file is loaded at application startup,");
+    rini_set_config_comment_line(&config, "if file is not found, default values are applied");
+    rini_set_config_comment_line(&config, NULL);
 
     // Define values
-    rini_set_value(&config, "SHOW_WINDOW_SPONSORS", 1, "Show sponsors window at initialization");
-    rini_set_value(&config, "SHOW_WINDOW_INFO", 0, "Show image info window");
-    rini_set_value(&config, "SHOW_WINDOW_EDIT", 0, "Show image edit window");
-    rini_set_value(&config, "IMAGE_SCALE_FILTER", 1, "Image scale filter enabled: 0-Point, 1-Bilinear");
-    rini_set_value(&config, "IMAGE_BACKGROUND", 0, "Image background style: 0-None, 1-Checked, 2-Black, 3-Magenta");
-    rini_set_value(&config, "VISUAL_STYLE", 2, "UI visual style selected: 0-9");
-    rini_set_value(&config, "CLEAN_WINDOW_MODE", 0, "Clean window mode enabled");
+    rini_set_config_value(&config, "SHOW_WINDOW_SPONSORS", 1, "Show sponsors window at initialization");
+    rini_set_config_value(&config, "SHOW_WINDOW_INFO", 0, "Show image info window");
+    rini_set_config_value(&config, "SHOW_WINDOW_EDIT", 0, "Show image edit window");
+    rini_set_config_value(&config, "IMAGE_SCALE_FILTER", 1, "Image scale filter enabled: 0-Point, 1-Bilinear");
+    rini_set_config_value(&config, "IMAGE_BACKGROUND", 0, "Image background style: 0-None, 1-Checked, 2-Black, 3-Magenta");
+    rini_set_config_value(&config, "VISUAL_STYLE", 2, "UI visual style selected: 0-9");
+    rini_set_config_value(&config, "CLEAN_WINDOW_MODE", 0, "Clean window mode enabled");
 
-    rini_save(config, "config.ini", ini_header);
+    rini_save_config(config, "config.ini", ini_header);
 
-    rini_unload(&config);
+    rini_unload_config(&config);
     
     return 0;
 }
