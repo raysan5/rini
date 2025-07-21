@@ -77,26 +77,26 @@ Default value: '#'
 
 ```c
 // Load/unload config from file (*.ini) or create a new config object (pass NULL)
-rini_config rini_load_config(const char *file_name);            
-void rini_unload_config(rini_config *config);
+rini_data rini_load(const char *file_name);            
+void rini_unload(rini_data *config);
 
 // Save config to file, with custom header (if provided)
 // NOTE: Only full config file rewrite supported, no partial updates
-void rini_save_config(rini_config config, const char *file_name);
+void rini_save(rini_data config, const char *file_name);
 
-// Get config value int/text/description for provided key, returns -1 or NULL if not found
-int rini_get_config_value(rini_config config, const char *key);
-const char *rini_get_config_value_text(rini_config config, const char *key); 
-const char *rini_get_config_value_description(rini_config config, const char *key);
+// Get config value int/text/description for provided key, returns NULL if not found
+int rini_get_value(rini_data config, const char *key);
+const char *rini_get_value_text(rini_data config, const char *key); 
+const char *rini_get_value_description(rini_data config, const char *key);
 
 // Set config value int/text and description for existing key or create a new entry
 // NOTE: When setting a text value, if id does not exist, a new entry is automatically created
-int rini_set_config_value(rini_config *config, const char *key, int value, const char *desc);
-int rini_set_config_value_text(rini_config *config, const char *key, const char *text, const char *desc); 
+int rini_set_value(rini_data *config, const char *key, int value, const char *desc);
+int rini_set_value_text(rini_data *config, const char *key, const char *text, const char *desc); 
 
 // Set config value description for existing key
 // WARNING: Key must exist to add description, if a description exists, it is updated
-int rini_set_config_value_description(rini_config *config, const char *key, const char *desc); 
+int rini_set_value_description(rini_data *config, const char *key, const char *desc); 
 ```
 
 ## limitations
