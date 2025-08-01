@@ -187,12 +187,12 @@
 // Total space reserved for Key,
 // Value starts after this spacing
 #if !defined(RINI_KEY_SPACING)
-    #define RINI_KEY_SPACING                 32
+    #define RINI_KEY_SPACING                 36
 #endif
 // Total space reserved for Value,
 // Description starts after this spacing
 #if !defined(RINI_VALUE_SPACING)
-    #define RINI_VALUE_SPACING                8
+    #define RINI_VALUE_SPACING               32
 #endif
 
 // Line comment delimiter (starting string)
