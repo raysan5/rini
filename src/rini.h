@@ -304,7 +304,7 @@ RINIAPI int rini_set_value_description(rini_data *data, const char *key, const c
 // Module Internal Functions Declaration
 //----------------------------------------------------------------------------------
 static int rini_read_key(const char *buffer, char *key); // Get key from a buffer line containing key-value-(description)
-static int rini_read_value_text(const char *buffer, char *text, char *desc); // Get value text (and description) from a buffer line
+static int rini_read_value_text(const char *buffer, char *text, char *desc, bool *isText); // Get value text (and description) from a buffer line
 
 static int rini_text_to_int(const char *text); // Convert text to int value (if possible), same as atoi()
 
@@ -339,7 +339,7 @@ rini_data rini_load(const char *file_name)
                 // NOTE: We are also skipping sections delimiters
                 if ((buffer[0] != RINI_LINE_COMMENT_DELIMITER) &&
                     (buffer[0] != RINI_LINE_SECTION_DELIMITER) &&
-                    (buffer[0] != '\n') && (buffer[0] != '\0')) value_counter++;
+                    (buffer[0] != '\n') && (buffer[0] != '\r') && (buffer[0] != '\0')) value_counter++;
             }
 
             // WARNING: We can't store more values than its max capacity
@@ -359,12 +359,12 @@ rini_data rini_load(const char *file_name)
                     // Skip commented lines and empty lines
                     if ((buffer[0] != RINI_LINE_COMMENT_DELIMITER) &&
                         (buffer[0] != RINI_LINE_SECTION_DELIMITER) &&
-                        (buffer[0] != '\n') && (buffer[0] != '\0'))
+                        (buffer[0] != '\n') && (buffer[0] != '\r') && (buffer[0] != '\0'))
                     {
                         // Get key identifier string
                         memset(data.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
                         rini_read_key(buffer, data.values[value_counter].key);
-                        rini_read_value_text(buffer, data.values[value_counter].text, data.values[value_counter].desc);
+                        rini_read_value_text(buffer, data.values[value_counter].text, data.values[value_counter].desc, &data.values[value_counter].isText);
 
                         value_counter++;
 
@@ -419,7 +419,7 @@ rini_data rini_load_from_memory(const char *text)
             // NOTE: We are also skipping sections delimiters
             if ((lines[l][0] != RINI_LINE_COMMENT_DELIMITER) &&
                 (lines[l][0] != RINI_LINE_SECTION_DELIMITER) &&
-                (lines[l][0] != '\n') && (lines[l][0] != '\0')) value_counter++;
+                (lines[l][0] != '\n') && (lines[l][0] != '\r') && (lines[l][0] != '\0')) value_counter++;
         }
 
         // WARNING: We can't store more values than its max capacity
@@ -436,12 +436,12 @@ rini_data rini_load_from_memory(const char *text)
                 // Skip commented lines and empty lines
                 if ((lines[l][0] != RINI_LINE_COMMENT_DELIMITER) &&
                     (lines[l][0] != RINI_LINE_SECTION_DELIMITER) &&
-                    (lines[l][0] != '\n') && (lines[l][0] != '\0'))
+                    (lines[l][0] != '\n') && (lines[l][0] != '\r') && (lines[l][0] != '\0'))
                 {
                     // Get key identifier string
                     memset(data.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
                     rini_read_key(lines[l], data.values[value_counter].key);
-                    rini_read_value_text(lines[l], data.values[value_counter].text, data.values[value_counter].desc);
+                    rini_read_value_text(lines[l], data.values[value_counter].text, data.values[value_counter].desc, &data.values[value_counter].isText);
 
                     value_counter++;
 
@@ -747,7 +747,7 @@ static int rini_read_key(const char *buffer, char *key)
 }
 
 // Get string-value from a buffer line containing id-value pair
-static int rini_read_value_text(const char *buffer, char *text, char *desc)
+static int rini_read_value_text(const char *buffer, char *text, char *desc, bool *isText)
 {
     char *buffer_ptr = (char *)buffer;
 
@@ -805,6 +805,8 @@ static int rini_read_value_text(const char *buffer, char *text, char *desc)
 
         // Remove ending quotation-mark from text (if being used)
         if (buffer_ptr[value_len - 1] == RINI_VALUE_QUOTATION_MARKS) { value_len--; }
+
+        *isText = true;
     }
 #endif
 
