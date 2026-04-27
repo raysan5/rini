@@ -785,8 +785,14 @@ int rini_set_value_text(rini_data *data, const char *key, const char *text, cons
                 memset(data->values[i].text, 0, RINI_MAX_TEXT_SIZE);
                 memcpy(data->values[i].text, text, strlen(text));
 
-                memset(data->values[i].desc, 0, RINI_MAX_DESC_SIZE);
-                if (desc != NULL) memcpy(data->values[i].desc, desc, strlen(desc));
+                if (desc != NULL)
+                {
+                    // NOTE: Update description only if new one provided,
+                    // do not remove previous description
+                    memset(data->values[i].desc, 0, RINI_MAX_DESC_SIZE);
+                    memcpy(data->values[i].desc, desc, strlen(desc));
+                }
+
                 result = 0;
                 break;
             }
