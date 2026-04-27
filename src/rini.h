@@ -41,15 +41,15 @@
 *
 *       #define RINI_MAX_TEXT_SIZE
 *           Defines the maximum size of value text
-*           Default value: 128 bytes
+*           Default value: 256 bytes
 *
 *       #define RINI_MAX_DESC_SIZE
 *           Defines the maximum size of value description
-*           Default value: 128 bytes
+*           Default value: 256 bytes
 *
 *       #define RINI_MAX_VALUE_CAPACITY
 *           Defines the maximum number of values supported
-*           Default value: 128 entries support
+*           Default value: 256 entries support
 *
 *       #define RINI_MAX_TEXT_FILE_SIZE
 *           Define the maximum size of the file that is saved in memory
@@ -179,15 +179,15 @@
 #endif
 
 #if !defined(RINI_MAX_TEXT_SIZE)
-    #define RINI_MAX_TEXT_SIZE              128
+    #define RINI_MAX_TEXT_SIZE              256
 #endif
 
 #if !defined(RINI_MAX_DESC_SIZE)
-    #define RINI_MAX_DESC_SIZE              128
+    #define RINI_MAX_DESC_SIZE              256
 #endif
 
 #if !defined(RINI_MAX_VALUE_CAPACITY)
-    #define RINI_MAX_VALUE_CAPACITY         128
+    #define RINI_MAX_VALUE_CAPACITY         256
 #endif
 
 #if !defined(RINI_MAX_TEXT_FILE_SIZE)
