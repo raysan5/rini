@@ -708,7 +708,7 @@ const char *rini_get_value_text(rini_data data, const char *key)
 }
 
 // Get value text for provided key with fallback if not found or not valid
-RINIAPI const char *rini_get_value_text_fallback(rini_data data, const char *key, const char *fallback)
+const char *rini_get_value_text_fallback(rini_data data, const char *key, const char *fallback)
 {
     const char *text = fallback;
 
