@@ -37,6 +37,10 @@ or source files without problems. But only ONE file should hold the implementati
 Define the maximum capacity of key-value data structure, customizable by user.
 Default value: 32 entries support
 
+`#define RINI_MAX_TEXT_FILE_SIZE`
+
+Define the maximum size of the file that is saved in memory.
+
 `#define RINI_LINE_COMMENT_DELIMITER`
 
 Define character used to comment lines, placed at beginning of line

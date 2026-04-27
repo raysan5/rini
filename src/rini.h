@@ -51,6 +51,10 @@
 *           Defines the maximum number of values supported
 *           Default value: 128 entries support
 *
+*       #define RINI_MAX_TEXT_FILE_SIZE
+*           Define the maximum size of the file that is saved in memory
+*           Default value: 4096 bytes
+*
 *       #define RINI_LINE_COMMENT_DELIMITER
 *           Define character used to comment lines, placed at beginning of line
 *           Most .ini files use semicolon ';' but '#' is also used
@@ -182,6 +186,10 @@
 
 #if !defined(RINI_MAX_VALUE_CAPACITY)
     #define RINI_MAX_VALUE_CAPACITY         128
+#endif
+
+#if !defined(RINI_MAX_TEXT_FILE_SIZE)
+    #define RINI_MAX_TEXT_FILE_SIZE         4096
 #endif
 
 // Total space reserved for Key,
@@ -476,13 +484,17 @@ void rini_save(rini_data data, const char *file_name)
                 memset(valuestr, 0, RINI_MAX_TEXT_SIZE + 2);
 #if RINI_USE_TEXT_QUOTATION_MARKS
                 // Add quotation marks if required
-                if (data.values[i].is_text) snprintf(valuestr, 130, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
+                if (data.values[i].is_text) snprintf(valuestr, RINI_MAX_TEXT_SIZE + 2, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
 #else
                 snprintf(valuestr, RINI_MAX_TEXT_SIZE + 2, "%s", data.values[i].text);
 #endif
-                fprintf(rini_file, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
-                    RINI_VALUE_SPACING, data.values[i].is_text? valuestr : data.values[i].text, 
-                    RINI_DESCRIPTION_DELIMITER, data.values[i].desc);
+                if (data.values[i].desc[0] != '\0')
+                    fprintf(rini_file, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
+                        RINI_VALUE_SPACING, data.values[i].is_text? valuestr : data.values[i].text,
+                        RINI_DESCRIPTION_DELIMITER, data.values[i].desc);
+                else
+                    fprintf(rini_file, "%-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
+                        data.values[i].is_text? valuestr : data.values[i].text);
             }
         }
 
@@ -493,8 +505,6 @@ void rini_save(rini_data data, const char *file_name)
 // Save data to text buffer ('\0' EOL)
 char *rini_save_to_memory(rini_data data)
 {
-    #define RINI_MAX_TEXT_FILE_SIZE  4096
-
     // Verify required data size is smaller than memory buffer size
     // NOTE: We add 64 extra possible characters by entry line
     int requiredSize = 0;
@@ -506,7 +516,7 @@ char *rini_save_to_memory(rini_data data)
     memset(text, 0, RINI_MAX_TEXT_FILE_SIZE);
     int offset = 0;
 
-    char valuestr[RINI_MAX_TEXT_FILE_SIZE + 2] = { 0 }; // Useful for text processing, adding quotation marks if required
+    char valuestr[RINI_MAX_TEXT_SIZE + 2] = { 0 }; // Useful for text processing, adding quotation marks if required
 
     for (unsigned int i = 0; i < data.count; i++)
     {
@@ -517,16 +527,21 @@ char *rini_save_to_memory(rini_data data)
         }
         else
         {
-            memset(valuestr, 0, RINI_MAX_TEXT_FILE_SIZE + 2);
+            memset(valuestr, 0, RINI_MAX_TEXT_SIZE + 2);
 #if RINI_USE_TEXT_QUOTATION_MARKS
             // Add quotation marks if required
-            if (data.values[i].is_text) snprintf(valuestr, RINI_MAX_TEXT_FILE_SIZE + 2, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
+            if (data.values[i].is_text) snprintf(valuestr, RINI_MAX_TEXT_SIZE + 2, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
 #else
-            snprintf(valuestr, RINI_MAX_TEXT_FILE_SIZE + 2, "%s", data.values[i].text);
+            snprintf(valuestr, RINI_MAX_TEXT_SIZE + 2, "%s", data.values[i].text);
 #endif
-            offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
-                    RINI_VALUE_SPACING, data.values[i].is_text? valuestr : data.values[i].text,
-                    RINI_DESCRIPTION_DELIMITER, data.values[i].desc);
+            // Add the description if required
+            if (data.values[i].desc[0] != '\0')
+                offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
+                        RINI_VALUE_SPACING, data.values[i].is_text? valuestr : data.values[i].text,
+                        RINI_DESCRIPTION_DELIMITER, data.values[i].desc);
+            else
+                offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
+                        data.values[i].is_text? valuestr : data.values[i].text);
         }
     }
 
