@@ -191,7 +191,7 @@
 #endif
 
 #if !defined(RINI_MAX_TEXT_FILE_SIZE)
-    #define RINI_MAX_TEXT_FILE_SIZE         4096
+    #define RINI_MAX_TEXT_FILE_SIZE        4096
 #endif
 
 // Total space reserved for Key,
@@ -323,6 +323,7 @@ static int rini_text_to_int(const char *text); // Convert text to int value (if 
 // Module Functions Definition
 //----------------------------------------------------------------------------------
 // Load data from file (.ini)
+// NOTE: Only key-value-description loaded, no empty lines or comments
 rini_data rini_load(const char *file_name)
 {
     rini_data data = { 0 };
@@ -439,18 +440,35 @@ rini_data rini_load_full(const char *file_name)
                     // useful for files editing without losing information
                     if (buffer[0] != '\0')
                     {
-                        if (buffer[0] == RINI_LINE_COMMENT_DELIMITER)
+                        if ((buffer[0] == '\n') || (buffer[0] == '\r'))  // Empty line
                         {
-                            // Read comment line
-                            char *buffer_ptr = (char *)buffer + 1;
+                            // Set entry as empty line: NULL, NULL, NULL
+                            memset(data.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);   // NULL
+                            memset(data.values[value_counter].text, 0, RINI_MAX_TEXT_SIZE); // NULL
+                            memset(data.values[value_counter].desc, 0, RINI_MAX_DESC_SIZE); // NULL
+                        }
+                        else if (buffer[0] == RINI_LINE_COMMENT_DELIMITER)  // Comment line
+                        {
+                            // Measure comment line length
                             int len = 0;
+                            char *buffer_ptr = (char *)buffer + 1; // Skip comment delimiter
                             while ((buffer_ptr[len] != '\0') && (buffer_ptr[len] != '\r') && (buffer_ptr[len] != '\n')) len++;
 
-                            // Set value as comment
-                            memset(data.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
-                            char text[2] = { RINI_LINE_COMMENT_DELIMITER, '\0' };
-                            memcpy(data.values[value_counter].text, text, 2);
-                            if (len > 0) memcpy(data.values[value_counter].desc, buffer_ptr, len);
+                            // Set entry as comment
+                            memset(data.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);   // NULL
+                            memset(data.values[value_counter].text, 0, RINI_MAX_TEXT_SIZE); // NULL
+                            memset(data.values[value_counter].desc, 0, RINI_MAX_DESC_SIZE); // NULL
+                            if (len == 0)
+                            {
+                                // Set entry as empty comment: NULL, NULL, " "
+                                data.values[value_counter].desc[0] = ' ';
+                            }
+                            else
+                            {
+                                // Set entry as comment: NULL, NULL, "comment"
+                                // WARNING: In case of comment line, everything after delimiter is read (including spaces) 
+                                memcpy(data.values[value_counter].desc, buffer_ptr, len);
+                            }
                         }
                         else
                         {
@@ -560,10 +578,12 @@ void rini_save(rini_data data, const char *file_name)
 
         for (unsigned int i = 0; i < data.count; i++)
         {
-            if ((data.values[i].key[0] == '\0') && (data.values[i].text[0] == RINI_LINE_COMMENT_DELIMITER))
+            if ((data.values[i].key[0] == '\0') && (data.values[i].text[0] == '\0'))
             {
-                if (data.values[i].desc[0] != '\0') fprintf(rini_file, "%c %s\n", RINI_LINE_COMMENT_DELIMITER, data.values[i].desc);
-                else fprintf(rini_file, "%c\n", RINI_LINE_COMMENT_DELIMITER);
+                if (data.values[i].desc[0] == '\0') fprintf(rini_file, "\n");  // Empty line
+                else if ((data.values[i].desc[0] == ' ') && (data.values[i].desc[1] == '\0')) // Empty comment line
+                    fprintf(rini_file, "%c\n", RINI_LINE_COMMENT_DELIMITER);
+                else fprintf(rini_file, "%c%s\n", RINI_LINE_COMMENT_DELIMITER, data.values[i].desc); // Comment line
             }
             else
             {
@@ -745,9 +765,8 @@ const char *rini_get_value_description(rini_data data, const char *key)
 int rini_set_comment_line(rini_data *data, const char *comment)
 {
     int result = -1;
-    char text[2] = { RINI_LINE_COMMENT_DELIMITER, '\0' };
 
-    result = rini_set_value_text(data, NULL, text, comment);
+    result = rini_set_value_text(data, NULL, NULL, comment);
 
     return result;
 }
@@ -804,14 +823,16 @@ int rini_set_value_text(rini_data *data, const char *key, const char *text, cons
     {
         if (data->count < data->capacity)
         {
-            // NOTE: Supporting comment line entries
-            if ((key == NULL) && (text[0] == RINI_LINE_COMMENT_DELIMITER))
+            if ((key == NULL) && (text == NULL)) // Comment line
             {
-                data->values[data->count].key[0] = '\0';
-                data->values[data->count].text[0] = RINI_LINE_COMMENT_DELIMITER;
-                if (desc != NULL) for (int i = 0; (i < RINI_MAX_DESC_SIZE) && (desc[i] != '\0'); i++)
-                    data->values[data->count].desc[i] = desc[i];
-                else data->values[data->count].desc[0] = '\0';
+                memset(data->values[data->count].key, 0, RINI_MAX_KEY_SIZE);
+                memset(data->values[data->count].text, 0, RINI_MAX_TEXT_SIZE);
+
+                if (desc != NULL)
+                {
+                    for (int i = 0; (i < RINI_MAX_DESC_SIZE) && (desc[i] != '\0'); i++) data->values[data->count].desc[i] = desc[i];
+                }
+                else memset(data->values[data->count].desc, 0, RINI_MAX_DESC_SIZE);
             }
             else
             {
