@@ -782,8 +782,14 @@ int rini_set_value(rini_data *data, const char *key, int value, const char *desc
 
     result = rini_set_value_text(data, key, value_text, desc);
 
-    data->values[data->count - 1].is_text = false;
-
+    if(result == 0){
+        for (unsigned int i = 0; i < data->count; i++){
+            if (strcmp(key, data->values[i].key) == 0){  // Key found
+                data->values[i].is_text = false;
+                break;
+            }   
+        }
+    }
     return result;
 }
 
