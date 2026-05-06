@@ -467,7 +467,7 @@ rini_data rini_load_full(const char *file_name)
                             else
                             {
                                 // Set entry as comment: NULL, NULL, "comment"
-                                // WARNING: In case of comment line, everything after delimiter is read (including spaces) 
+                                // WARNING: In case of comment line, everything after delimiter is read (including spaces)
                                 memcpy(data.values[value_counter].desc, buffer_ptr, len);
                             }
                         }
@@ -652,7 +652,7 @@ char *rini_save_to_memory(rini_data data)
             {
                 offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
                         RINI_VALUE_SPACING, data.values[i].is_text? valuestr : data.values[i].text,
-                        RINI_DESCRIPTION_DELIMITER, data.values[i].desc);            
+                        RINI_DESCRIPTION_DELIMITER, data.values[i].desc);
             }
             else
             {
@@ -782,14 +782,20 @@ int rini_set_value(rini_data *data, const char *key, int value, const char *desc
 
     result = rini_set_value_text(data, key, value_text, desc);
 
-    if(result == 0){
-        for (unsigned int i = 0; i < data->count; i++){
-            if (strcmp(key, data->values[i].key) == 0){  // Key found
+    if (result == 0) // Value set!
+    {
+        // NOTE: Key may have already existed and updated, so
+        // need to re-find it to update the flag manually
+        for (unsigned int i = 0; i < data->count; i++)
+        {
+            if (strcmp(key, data->values[i].key) == 0) // Key found
+            {
                 data->values[i].is_text = false;
                 break;
-            }   
+            }
         }
     }
+
     return result;
 }
 
