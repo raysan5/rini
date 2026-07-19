@@ -680,7 +680,7 @@ char *rini_save_to_memory(rini_data data)
             }
         }
         
-        if (expectedByteWritten >= RINI_MAX_LINE_SIZE) offset += RINI_MAX_LINE_SIZE;
+        if ((expectedByteWritten < 0) || (expectedByteWritten >= RINI_MAX_LINE_SIZE)) offset += (int)strlen(text + offset);
         else offset += expectedByteWritten;
     }
 
